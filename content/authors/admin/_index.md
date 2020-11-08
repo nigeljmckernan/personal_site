@@ -31,8 +31,7 @@ social:
   link: https://www.linkedin.com/in/nigel-mckernan-22951b107/
 superuser: true
 title: Nigel McKernan
-user_groups:
-- Principal Investigators
+
 ---
 
 Hi there! My name is Nigel McKernan from Montréal, Québec, Canada. I am a Master's Economics Graduate from Concordia University here in Montréal.
