@@ -26,4 +26,9 @@
     name = "CV"
     url = "media/CV.pdf"
     weight = 70
+    
+[[main]]
+  name = "Appendix"
+  url = "media/MA_Paper.html"
+  weight = 90
 
