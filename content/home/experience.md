@@ -25,22 +25,26 @@ date_format: Jan 2006
 #   Leave `date_end` empty if it's your current employer.
 #   You can begin a multiline `description` using YAML's `|-`.
 experience:
-- company: GenCoin
-  company_url: ""
+- company: Reitmans Canada Limited
+  company_url: "https://www.reitmanscanadalimited.com/default.aspx?AspxAutoDetectCookieSupport=1"
   date_end: ""
-  date_start: "2017-01-01"
+  date_start: "2018-06-15"
   description: |-
     Responsibilities include:
-    * Analysing
-    * Modelling
-    * Deploying
-  location: California
-  title: CEO
-- company: University X
-  company_url: ""
-  date_end: "2016-12-31"
-  date_start: "2016-01-01"
-  description: Taught electronic engineering and researched semiconductor physics.
-  location: California
-  title: Professor
+    * Handle construction/execution of various recurring and ad-hoc reports
+    * Analysis of Addition-Elle/Penningtons customer base, including: geography, spend history and habits, demographics, etc.
+    * Forecasting sales of stores/brands
+    * Customer segmenting and clustering
+  location: Montréal, Québec
+  title: CRM Analyst
+- company: Investors Group
+  company_url: "https://www.investorsgroup.com/en"
+  date_end: "2017-08-28"
+  date_start: "2017-05-01"
+  description: |-
+    Responsibilities include:
+    * Handled net asset valuations (NAV's) of 20 different mutual funds
+    * Dissemination of various end-of-day/week reports to the relevant recipients
+  location: Winnipeg, Manitoba
+  title: Fund Accountant
 ---
