@@ -18,18 +18,38 @@ subtitle = ""
   icon = "r-project"
   icon_pack = "fab"
   name = "R"
-
+  description = "Tidyverse/models, ML, data.table"
   
 [[feature]]
   icon = "database"
   icon_pack = "fas"
   name = "SQL"
+  description = "SQLite, MS SQL, Salesforce"
   
     
 [[feature]]
   icon = "python"
   icon_pack = "fab"
   name = "Python"
+  description = "Pandas, NumPy, scikit-learn"
+  
+[[feature]]
+  icon = "comment"
+  icon_pack = "fas"
+  name = "French"
+  description = "Niveau B2"
+  
+[[feature]]
+  icon = "chart-line"
+  icon_pack = "fas"
+  name = "Economics"
+  description = "Econometrics, Human Capital, Development"
+  
+[[feature]]
+  icon = "comment-alt"
+  icon_pack = "fas"
+  name = "Spanish"
+  description = "Nivel B2"
 
 # Uncomment to use emoji icons.
 # [[feature]]

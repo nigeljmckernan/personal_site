@@ -4,10 +4,10 @@ authors:
 bio: Concordia MA Economics Graduate and Aspiring Data Scientist/Economist.
 education:
   courses:
-  - course: Master's of Arts in Economics
+  - course: Master of Arts in Economics
     institution: Concordia University
     year: 2020
-  - course: Bachelor of Arts (Honours) in Economics
+  - course: Bachelour of Arts (Honours) in Economics
     institution: University of Manitoba
     year: 2017
 email: "nigeljmckernan@gmail.com"
@@ -17,6 +17,7 @@ interests:
 - Econometrics
 - Machine Learning
 - Data Science
+- French (B2)
 organizations:
 - name: Reitmans Canada Limited
   url: https://www.reitmanscanadalimited.com/default.aspx?AspxAutoDetectCookieSupport=1
@@ -36,6 +37,10 @@ title: Nigel McKernan
 
 ---
 
-Hi there! My name is Nigel McKernan from Montréal, Québec, Canada. I am a Master's Economics Graduate from Concordia University here in Montréal.
+Hi there! 
+
+My name is Nigel McKernan and I'm from Winnipeg, Manitoba, currently living in Montréal, Québec.
+
+I'm passionate Human Capital topics, Econometrics, and Macroeconomics, as well as Data Science and Machine Learning.
 
 {{< icon name="download" pack="fas" >}} Download my {{< staticref "media/CV.pdf" "newtab" >}}CV{{< /staticref >}}.
