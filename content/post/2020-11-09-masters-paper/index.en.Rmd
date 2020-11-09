@@ -1,0 +1,25 @@
+---
+title: Masters Paper
+author: Nigel McKernan
+date: '2020-11-09'
+slug: masters-paper
+categories:
+  - Econometrics
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2020-11-09T13:47:13-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+# Masters Research Project
+
+Welcome to my personal site!
+
+This is a test post.
