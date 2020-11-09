@@ -1,7 +1,7 @@
 ---
 authors:
 - Nigel McKernan
-bio: My research interests include distributed robotics, mobile computing and programmable matter.
+bio: Concordia MA Economics Graduate and Aspiring Data Scientist/Economist.
 education:
   courses:
   - course: Master's of Arts in Economics
