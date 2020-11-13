@@ -1,0 +1,41 @@
+---
+title: Thesis and Appendix
+author: Nigel McKernan
+date: '2020-11-12'
+slug: thesis-and-appendix
+categories:
+  - Thesis
+tags:
+  - econometrics
+  - r
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2020-11-12T20:15:42-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+If this is your first time visiting my site, please take the time to read my [Masters Research Paper](https://nigelmckernan.ca/media/Thesis_Nigel_McKernan.pdf) and its [Appendix](https://nigelmckernan.ca/media/ma_paper).
+
+The latter is more of a demonstration of the bulk of the R code I used to conduct my analysis.
+
+My project used a hedonic regression model to establish a connection between real estate prices in the Canadian census metropolitan area market, and air pollutant concentrations (particularly with PM<sub>2.5</sub>).
+
+Due there already being extensive research and literature on hedonic regression models, I sought to take a more novel approach compared to previous endeavours.
+
+First, my project takes a novel approach by using an instrumental-variable (IV) approach in a panel-data context. The instrumental variables used were Wind Speed and Wind Direction.
+
+Second, utilizing temporal disaggregation to turn several variables from Statistics Canada that were only available at an annual frequency, down to a monthly frequency.
+
+Most of the analysis used for this project was done in R, with the first half of the Appendix vignette focusing on the more "data science-y" aspects of the project; incorporating and using packages from the [Tidyverse](https://tidyverse.org).
+
+This was a huge project for me as it taught me the bulk of the core R programming skills that I now have.
+
+If you find either my Thesis or its Appendix insightful or worthy of sharing, please leave me a comment or share with your peers!
+
+Thanks for reading.
