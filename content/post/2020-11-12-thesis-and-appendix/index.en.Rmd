@@ -28,7 +28,7 @@ My project used a hedonic regression model to establish a connection between rea
 
 Due there already being extensive research and literature on hedonic regression models, I sought to take a more novel approach compared to previous endeavours.
 
-First, my project takes a novel approach by using an instrumental-variable (IV) approach in a panel-data context. The instrumental variables used were Wind Speed and Wind Direction.
+First, using an instrumental-variable (IV) approach in a panel-data context. The instrumental variables used were Wind Speed and Wind Direction, though only Wind Speed being used in the end due to rejecting the Sargan test.
 
 Second, utilizing temporal disaggregation to turn several variables from Statistics Canada that were only available at an annual frequency, down to a monthly frequency.
 
