@@ -1,0 +1,285 @@
+---
+title: Parallelized `dplyr` Queries to SQL Databases with `foreach`
+author: Nigel McKernan
+date: '2021-05-24'
+slug: paralellized-dplyr-queries-to-sql-databases-with-foreach
+categories:
+  - R
+tags:
+  - dplyr
+  - dbplyr
+  - SQL
+  - foreach
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-05-24T22:38:40-04:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index.en_files/header-attrs/header-attrs.js"></script>
+
+
+<p>In my humble opinion, I find <code>dplyr</code> to be a genius bit of engineering with how it abstracts <em>and</em> simplifies what you <em>actually</em> want to do with potential <code>SQL</code> code.</p>
+<p>However, I have not seen much coverage on how to take advantage of parallelization of <code>dplyr</code> queries with something like <code>foreach</code>.</p>
+<p>Usually, a post will provide a solution using <code>parallel::mclappply()</code> or some other parallelized <code>apply()</code>-type function, like <a href="https://stackoverflow.com/a/45442450/12375487">this post</a> on StackOverflow.</p>
+<p>If you’re more partial to the way a parallelized <code>for</code>-loop might syntactically accomplish the same thing, then I have a solution via <code>foreach</code> that allows you to write parallelized <code>dplyr</code> queries off to your SQL databases.</p>
+<p><strong>Note</strong>: There is the <code>multidplyr</code> package, however that only deals with local in-memory dataframes, and <em>not</em> remote databases.</p>
+<p>Let’s see how we might accomplish this.</p>
+<p>For my example dataset, I’m going to use the <code>nycflights13</code> package that contains all flights arriving and departing NYC in 2013. It’s a great mid-size dataset to experiment with.</p>
+<p>Let’s get our packages loaded and our databases set up.</p>
+<p>For this example I’m going to spin up an in-memory SQLite database.</p>
+<pre class="r"><code>library(DBI)
+library(nycflights13)
+library(tidyverse)
+library(RSQLite)
+library(doParallel)
+
+Remote_DB &lt;- dbConnect(SQLite(), &quot;:memory:&quot;)
+
+flights %&gt;% 
+  
+  dbWriteTable(
+    conn = Remote_DB,
+    name = &quot;Flights&quot;,
+    value = .
+  )
+
+Flights_Remote &lt;- tbl(Remote_DB, &quot;Flights&quot;)
+
+Flights_Remote</code></pre>
+<pre><code>## # Source:   table&lt;Flights&gt; [?? x 19]
+## # Database: sqlite 3.35.5 [:memory:]
+##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
+##  1  2013     1     1      517            515         2      830            819
+##  2  2013     1     1      533            529         4      850            830
+##  3  2013     1     1      542            540         2      923            850
+##  4  2013     1     1      544            545        -1     1004           1022
+##  5  2013     1     1      554            600        -6      812            837
+##  6  2013     1     1      554            558        -4      740            728
+##  7  2013     1     1      555            600        -5      913            854
+##  8  2013     1     1      557            600        -3      709            723
+##  9  2013     1     1      557            600        -3      838            846
+## 10  2013     1     1      558            600        -2      753            745
+## # ... with more rows, and 11 more variables: arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;,
+## #   flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;,
+## #   distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dbl&gt;</code></pre>
+<p>Now that we’ve set up our database connection, let’s setup our <code>foreach</code> back-end.</p>
+<p>In case you’re not aware, in order for <code>foreach()</code> to work in a parallelized fashion and <em>not</em> via serial operations, <code>foreach</code> needs a <em>back-end</em> to be registered.</p>
+<p>A <code>foreach</code> back-end is basically a way to declare to <code>foreach</code> <em>how</em> to distribute the workload across the worker nodes, whether they be the (probably) many cores in your computer’s CPU, different computers on the same network, or more remote cloud-based machines.</p>
+<p>In this example, I’m going to use the <code>doParallel</code> back-end to carry this out, which will just be spread out across all but one of my computer’s CPU cores.</p>
+<pre class="r"><code>cl &lt;- makeCluster(detectCores() - 1L)
+
+registerDoParallel(cl)</code></pre>
+<p>Now that we’ve registered our back-end with <code>foreach</code> let’s determine the query we would like to parallelized.</p>
+<p>I’m going to arbitrarily rank the top 5 longest average arrival delays by plane per origin.</p>
+<p>The parallelization will be taken place over the “per origin” part, so let’s just start with one origin location for now.</p>
+<p>I realise that this is not the most helpful of examples for parallelization, as window functions in SQL can easily handle things like this (ranking, etc.) across different variables and groups.</p>
+<p>I’ll present a more personal example that I use quite frequently for my job in retail later in this post.</p>
+<pre class="r"><code>Main_Query &lt;- Flights_Remote %&gt;%
+  
+  filter(origin == &quot;LGA&quot;) %&gt;%
+  
+  group_by(
+    origin,
+    tailnum
+  ) %&gt;%
+  
+  summarise(Mean_Arrival = mean(arr_delay, na.rm = TRUE)) %&gt;%
+  
+  arrange(desc(Mean_Arrival)) %&gt;%
+  
+  mutate(Rank = row_number()) %&gt;%
+  
+  filter(Rank &lt;= 5) %&gt;%
+  
+  ungroup() %&gt;%
+  
+  collect()</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;origin&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning: ORDER BY is ignored in subqueries without LIMIT
+## i Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
+<pre class="r"><code>Main_Query</code></pre>
+<pre><code>## # A tibble: 5 x 4
+##   origin tailnum Mean_Arrival  Rank
+##   &lt;chr&gt;  &lt;chr&gt;          &lt;dbl&gt; &lt;int&gt;
+## 1 LGA    N635AA           648     1
+## 2 LGA    N617MQ           305     2
+## 3 LGA    N911DA           294     3
+## 4 LGA    N452UW           277     4
+## 5 LGA    N922EV           276     5</code></pre>
+<p>Now that we’ve done that for one origin, let’s instead provide a vector of origins to iterate over for our next example.</p>
+<pre class="r"><code>Origins &lt;- c(&quot;LGA&quot;, &quot;EWR&quot;, &quot;MCO&quot;, &quot;ORD&quot;, &quot;IAD&quot;)
+
+foreach(i = seq_along(Origins),
+        .packages = c(&quot;dplyr&quot;, &quot;DBI&quot;, &quot;RSQLite&quot;, &quot;nycflights13&quot;),
+        .combine = &quot;rbind&quot;) %dopar% {
+          
+        Remote_DB &lt;- dbConnect(SQLite(), &quot;:memory:&quot;) # Each worker must make a connection to our in-memory database
+        
+        dbWriteTable( # If this were on an on-disk database, this dbWriteTable() call wouldn&#39;t be necessary
+          conn = Remote_DB,
+          name = &quot;Flights&quot;,
+          value = flights
+        )
+        
+        Flights_Remote &lt;- tbl(Remote_DB, &quot;Flights&quot;) # Connecting to the Flights table we sent to the database earlier
+        
+        Flights_Remote %&gt;%
+  
+          filter(origin == local(Origins[i])) %&gt;%
+  
+          group_by(
+            origin,
+            tailnum
+            ) %&gt;%
+  
+          summarise(Mean_Arrival = mean(arr_delay, na.rm = TRUE)) %&gt;%
+  
+          arrange(desc(Mean_Arrival)) %&gt;%
+  
+          mutate(Rank = row_number()) %&gt;%
+  
+          filter(Rank &lt;= 5) %&gt;%
+  
+          ungroup() %&gt;%
+  
+          collect() -&gt; Results # Let&#39;s save the results in a temporary variable
+        
+        dbDisconnect(Remote_DB) # Don&#39;t forget that each worker must disconnect before closing
+        
+        Results # foreach pulls the last object determined in the loop to bring out into your main R session
+          
+        }</code></pre>
+<pre><code>## # A tibble: 10 x 4
+##    origin tailnum Mean_Arrival  Rank
+##    &lt;chr&gt;  &lt;chr&gt;          &lt;dbl&gt; &lt;int&gt;
+##  1 LGA    N635AA          648      1
+##  2 LGA    N617MQ          305      2
+##  3 LGA    N911DA          294      3
+##  4 LGA    N452UW          277      4
+##  5 LGA    N922EV          276      5
+##  6 EWR    N943DL          338.     1
+##  7 EWR    N6702           240      2
+##  8 EWR    N5EMAA          205.     3
+##  9 EWR    N937DL          197      4
+## 10 EWR    N7715E          188      5</code></pre>
+<p>Like I said previously, I know this is not the best example; a parallelized loop is <em>not</em> needed for this, as you can see here:</p>
+<pre class="r"><code>Origins &lt;- c(&quot;LGA&quot;, &quot;EWR&quot;, &quot;MCO&quot;, &quot;ORD&quot;, &quot;IAD&quot;)
+
+Flights_Remote %&gt;%
+  
+  filter(origin %in% Origins) %&gt;%
+  
+  group_by(
+    origin,
+    tailnum
+  ) %&gt;%
+  
+  summarise(Mean_Arrival = mean(arr_delay, na.rm = TRUE)) %&gt;%
+  
+  arrange(desc(Mean_Arrival)) %&gt;%
+  
+  mutate(Rank = row_number()) %&gt;%
+  
+  filter(Rank &lt;= 5) %&gt;%
+  
+  ungroup()</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;origin&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Warning: ORDER BY is ignored in subqueries without LIMIT
+## i Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
+<pre><code>## # Source:     lazy query [?? x 4]
+## # Database:   sqlite 3.35.5 [:memory:]
+## # Ordered by: desc(Mean_Arrival)
+##    origin tailnum Mean_Arrival  Rank
+##    &lt;chr&gt;  &lt;chr&gt;          &lt;dbl&gt; &lt;int&gt;
+##  1 EWR    N943DL          338.     1
+##  2 EWR    N6702           240      2
+##  3 EWR    N5EMAA          205.     3
+##  4 EWR    N937DL          197      4
+##  5 EWR    N7715E          188      5
+##  6 LGA    N635AA          648      1
+##  7 LGA    N617MQ          305      2
+##  8 LGA    N911DA          294      3
+##  9 LGA    N452UW          277      4
+## 10 LGA    N922EV          276      5</code></pre>
+<p>Thanks to Window Functions in SQL, a parallelized loop is not necessary.</p>
+<p>Instead I’ll bring up an example that might be a bit more relevant to me:</p>
+<p>I currently work as a CRM analyst for Canadian fashion retailer based out of Montréal. One of my many duties is to determine the value that a particular store’s customers might be worth in our overall market.</p>
+<p>Put simply: for a certain store’s customers, how much do they spend in our other locations.</p>
+<p>The catch is, I usually need to do this for our entire collection of currently-open stores.</p>
+<p>I do not know of a way currently to do this <em>without</em> implementing a for-loop or <code>apply()</code>-style of execution where a list of stores is iterated over to determine its customers and their behaviour elsewhere.</p>
+<p>The steps to do this then are:</p>
+<ol style="list-style-type: decimal">
+<li>Determine the window of time
+<ul>
+<li>Usually this is some 12-month window</li>
+</ul></li>
+<li>Determine the list of customers that shop at the given store in the aforementioned time window</li>
+<li>Take that list of customers and aggregate their total sales by store.</li>
+</ol>
+<p>Again, this is fairly straightforward to do with one or maybe a handful of stores manually.</p>
+<p>When it’s in the hundreds of stores, it becomes quite tedious and slow quite fast.</p>
+<p>So, let’s:</p>
+<ol style="list-style-type: decimal">
+<li>Take a window from 12-months prior to today, to today</li>
+<li>Pull a <strong>distinct</strong> list of customers for a given store</li>
+<li>Use that list to determine what they spend in our other stores</li>
+</ol>
+<p>The following code chunk will not be evaluated, as I do not have simulated/fake data prepared to demonstrate, and I of course can’t display my employer’s confidential data.</p>
+<p>I’m going to write this in sort of “pseudo-code”.</p>
+<pre class="r"><code>foreach(i = seq_along(Some_Vector_of_Stores),
+        .packages = c(&quot;DBI&quot;,&quot;dplyr&quot;,&quot;RSQLite&quot;),
+        .combine = &quot;rbind&quot;) %dopar% {
+          
+          Database &lt;- dbConnect(SQLite(), &quot;Path/To/SQLite/Database.sqlite&quot;) # Connect to our database
+          
+          Transactions &lt;- tbl(Database, &quot;Transactions&quot;) # Connect to the needed table
+          
+          Transactions %&gt;%
+            
+            filter(
+              Transaction_Date %&gt;% between(&quot;Beginning_Date&quot;, &quot;End_Date&quot;),
+              Store_no == local(Some_Vector_of_Stores[i])
+              ) %&gt;%
+            
+            distinct(
+              Customer_ID
+              Host_Store == Store_no
+              ) %&gt;%
+            
+            inner_join(
+              Transactions %&gt;%
+                
+                filter(Transaction_Date %&gt;% between(&quot;Beginning_Date&quot;, &quot;End_Date&quot;)),
+              
+              by = &quot;Customer_ID&quot;
+            ) %&gt;%
+            
+            group_by(
+              Host_Store,
+              Store_no
+            ) %&gt;%
+            
+            summarise(
+              Customers = n_distinct(Customer_ID),
+              Spend = sum(Sales)
+            ) %&gt;%
+            
+            ungroup() %&gt;%
+            
+            collect() -&gt; Results
+          
+          dbDisconnect(Database)
+          
+          Results
+        }</code></pre>
+<p>These examples don’t strictly <em>need</em> to be run in parallel; as long as the syntax is correct, sometimes a serial method is the only way possible.</p>
+<p>I more did this example to demonstrate how <code>dbplyr</code> queries can be parallelized via the syntax of a <code>for</code> loop, specifically.</p>
+<p>I often prefer loops in R compared to either <code>purrr</code>’s <code>map()</code> family of functions, or their base-R equivalents with the <code>apply</code> family of functions.</p>
