@@ -77,7 +77,7 @@ Flights_Remote</code></pre>
 <pre class="r"><code>cl &lt;- makeCluster(detectCores() - 1L)
 
 registerDoParallel(cl)</code></pre>
-<p>Now that we’ve registered our back-end with <code>foreach</code> let’s determine the query we would like to parallelized.</p>
+<p>Now that we’ve registered our back-end with <code>foreach</code> let’s determine the query we would like to be parallelized.</p>
 <p>I’m going to arbitrarily rank the top 5 longest average arrival delays by plane per origin.</p>
 <p>The parallelization will be taken place over the “per origin” part, so let’s just start with one origin location for now.</p>
 <p>I realise that this is not the most helpful of examples for parallelization, as window functions in SQL can easily handle things like this (ranking, etc.) across different variables and groups.</p>

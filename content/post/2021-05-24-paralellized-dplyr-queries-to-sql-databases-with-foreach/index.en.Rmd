@@ -78,7 +78,7 @@ cl <- makeCluster(detectCores() - 1L)
 registerDoParallel(cl)
 ```
 
-Now that we've registered our back-end with `foreach` let's determine the query we would like to parallelized.
+Now that we've registered our back-end with `foreach` let's determine the query we would like to be parallelized.
 
 I'm going to arbitrarily rank the top 5 longest average arrival delays by plane per origin. 
 
