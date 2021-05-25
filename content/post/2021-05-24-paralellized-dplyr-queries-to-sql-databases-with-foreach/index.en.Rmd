@@ -242,7 +242,7 @@ foreach(i = seq_along(Some_Vector_of_Stores),
             
             distinct(
               Customer_ID
-              Host_Store == Store_no
+              Host_Store = Store_no
               ) %>%
             
             inner_join(
