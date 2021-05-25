@@ -191,10 +191,9 @@ Flights_Remote %>%
 
 Thanks to Window Functions in SQL, a parallelized loop is not necessary.
 
-
 Instead I'll bring up an example that might be a bit more relevant to me:
 
-I currently work as a CRM analyst for Canadian fashion retailer based out of Montréal. One of my many duties is to determine the value that a particular store's customers might be worth in our overall market.
+I currently work as a CRM analyst for a Canadian fashion retailer based out of Montréal. One of my many duties is to determine the value that a particular store's customers might be worth in our overall market.
 
 Put simply: for a certain store's customers, how much do they spend in our other locations.
 
