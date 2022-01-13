@@ -3,7 +3,6 @@
 .RData
 .Ruserdata
 /public/
-
 .DS_Store
-
 Thumbs.db
+HOW_TO_FIX_RSTUDIO_GIT_FREEZE.txt
